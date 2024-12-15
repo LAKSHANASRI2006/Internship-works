@@ -1,0 +1,65 @@
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder,StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+import streamlit as st
+
+def load_data():
+    al=pd.read_csv(r'C:\Users\Intel\Desktop\INTERNSHIP\day1\cleaned_data.csv', encoding='latin1')
+    return al
+
+encoders = {}
+for coloumn in ['Position','Location','Gender','Education','Experience (Years)']:
+    encoder = LabelEncoder()
+al[coloumn] = encoder.fit_transform(dataset[column])
+encoders[coloumn] = encoder
+
+encoder_Position = LabelEncoder()
+encoder_Location = LabelEncoder()
+encoder_Experience = LabelEncoder()
+al['Position'] = encoder_Position.fit_transform(al['Position'])
+al['Location'] = encoder_Location.fit_transform(al['Location'])
+al['Experience (Years)'] = encoder_Experience.fit_transform(al['Experience (Years)'])
+al['Position_Location']=al['Position']*al['Location']
+encoders = load_data()
+
+
+Position_decoder = encoders['Position']
+Location_decoder = encoders['Location']
+Experience_decoder = encoders['Experience (Years)']
+
+x = al[['Position','Location','Position_Location', 'Experience (Years)']]
+y = al.iloc[:,-1].values
+
+scaler_y = StandardScaler()
+y_scaled = scaler_y.fit_transform(y.reshape(-1,1)).flatten()
+
+x_train, x_test, y_train, y_test = train_test_split(x, y_scaled, test_size=0.30, random_state=0)
+
+Scaler = StandardScaler()
+x_train_scaled = Scaler.fit_transform(x_train)
+x_test_scaled =  Scaler.transform(x_test)
+x_test_scaled
+
+regressor = LinearRegression()
+regressor.fit(x_train_scaled, y_train)
+train_score = regressor.score(x_train_scaled, y_train)
+test_score = regressor.score(x_test_scaled, y_test)
+
+st.write(f'Training score: {train_score}')
+st.write(f'Test score: {test_score}')
+
+st.title('Salary Prediction')
+st.write('Please enter the following details for predictions')
+
+Position_input = st.selectbox('Select Position',Position_decoder)
+Location_input = st.selectbox('Select Location',Location_decoder)
+Experience_input = st.selectbox('Select Experience (Years)',Experience_decoder)
+
+
+encoded_position = Position_decoder.transform([Position_input])
+encoded_location = Location_decoder.transform([Location_input])
+encoded_experience = Experience_decoder.transform([Experience_input])
+
+
